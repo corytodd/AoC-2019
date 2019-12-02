@@ -1,0 +1,7 @@
+[workspace]
+
+members = [
+    "aoc_1",
+    "aoc_2",
+    "common"
+]
