@@ -1,4 +1,4 @@
-// AOC Day 1
+// AOC Day 1 Part 1
 // 2019-12-01
 // Solve the fuel equation: sum(round(m/3) - 2)
 // for all modules in aoc_1.txt
