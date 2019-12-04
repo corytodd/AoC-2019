@@ -1,4 +1,4 @@
-// AOC Day 2
+// AOC Day 2 Part 1
 // 2019-12-02
 // Create a simple opcode processor
 use common;

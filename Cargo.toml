@@ -3,6 +3,7 @@
 members = [
     "aoc_1_1",
     "aoc_1_2",
-    "aoc_2",
+    "aoc_2_1",
+    "aoc_2_2",
     "common"
 ]
