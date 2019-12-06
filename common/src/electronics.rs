@@ -106,8 +106,8 @@ impl Circuit {
                     segment.p2 = *end;
                     w += segment.length();
                     break;
-                },
-                false => w += segment.length()
+                }
+                false => w += segment.length(),
             };
         }
 
@@ -159,8 +159,8 @@ impl Circuit {
             let mut w = 0;
 
             w += self.measure_speed(p, &self.wire_1);
-            w += self.measure_speed(p, &self.wire_2);            
-                        
+            w += self.measure_speed(p, &self.wire_2);
+
             if w < speed {
                 speed = w;
                 fastest = *p;

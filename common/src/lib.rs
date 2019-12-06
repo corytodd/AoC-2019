@@ -2,6 +2,7 @@ pub mod computer;
 pub mod electronics;
 pub mod engine;
 pub mod linalg;
+pub mod security;
 
 use std::fs::File;
 use std::io::{prelude::*, BufReader, Lines};
