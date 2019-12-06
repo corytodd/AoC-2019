@@ -6,5 +6,8 @@ use common::electronics;
 fn main() {
     let circuit = electronics::Circuit::from_file("aoc_3.txt".to_string());
 
-    circuit.closest_intersection();
+    let point = circuit.closest_intersection().unwrap();
+
+    let d = electronics::Circuit::origin().mdist(&point);
+    println!("{:?}", d);
 }
