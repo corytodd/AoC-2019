@@ -6,19 +6,30 @@ pub struct Point {
 }
 
 impl Point {
+    pub fn dist(&self, other: &Point) -> u64 {
+        let d = ((other.x - self.x).pow(2) + (other.y - self.y).pow(2)) as f64;
+        (d.powf(0.5).round()) as u64
+    }
+
     pub fn mdist(&self, other: &Point) -> u64 {
         ((self.x - other.x).abs() + (self.y - other.y).abs()) as u64
     }
 }
 
 // Line segment
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub struct Line {
     pub p1: Point,
     pub p2: Point,
 }
 
+// Line in whole-number space
 impl Line {
+    // Return length of this line
+    pub fn length(&self) -> u64 {
+        self.p1.dist(&self.p2)
+    }
+
     pub fn get_intersection(&self, other: &Line) -> Option<Point> {
         let x1 = self.p1.x as i64;
         let x2 = self.p2.x as i64;
@@ -35,11 +46,8 @@ impl Line {
         let d = ((x1 - x2) * (y3 - y4)) - ((y1 - y2) * (x3 - x4));
 
         if d == 0 {
-            
             None
-
         } else {
-
             let p = Point {
                 x: (n1 as f64 / d as f64).round() as i32,
                 y: (n2 as f64 / d as f64).round() as i32,
@@ -47,11 +55,11 @@ impl Line {
 
             // Check that point is on both lines
             if !self.contains(&p) {
-                return None
+                return None;
             }
-            
+
             if !other.contains(&p) {
-                return None
+                return None;
             }
 
             Some(p)
@@ -59,7 +67,7 @@ impl Line {
     }
 
     // Return true in point [p] is on this segment
-    fn contains(&self, p: &Point) -> bool {
+    pub fn contains(&self, p: &Point) -> bool {
         let xmin = std::cmp::min(self.p1.x, self.p2.x);
         let xmax = std::cmp::max(self.p1.x, self.p2.x);
         let ymin = std::cmp::min(self.p1.y, self.p2.y);
@@ -73,6 +81,30 @@ impl Line {
 mod tests {
 
     use super::*;
+
+    #[test]
+    fn line_len_0() {
+        let line = Line {
+            p1: Point { x: 0, y: 0 },
+            p2: Point { x: 0, y: 0 },
+        };
+
+        let expected = 0u64;
+        let actual = line.length();
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn line_len() {
+        let line = Line {
+            p1: Point { x: -10, y: 10 },
+            p2: Point { x: 5, y: -1 },
+        };
+
+        let expected = 19u64;
+        let actual = line.length();
+        assert_eq!(expected, actual);
+    }
 
     #[test]
     fn line_intersect() {

@@ -25,7 +25,7 @@ impl Circuit {
     }
 
     pub fn origin() -> Point {
-        Point{x: 1, y: 1}
+        Point { x: 1, y: 1 }
     }
 
     #[cfg(test)]
@@ -75,54 +75,99 @@ impl Circuit {
         segments
     }
 
-    pub fn closest_intersection(&self) -> Option<Point> {
-        let mut inter: Vec<Point> = Vec::new();
+    fn get_intersections(&self) -> Vec<Point> {
+        let mut points: Vec<Point> = Vec::new();
 
         // Skip the origin segment for both wires
         for l1 in self.wire_1.iter() {
             for l2 in self.wire_2.iter() {
-
                 match l1.get_intersection(&l2) {
                     Some(p) => {
                         // Do not allow intersections on the origin
                         if p == Circuit::origin() {
                             continue;
                         }
-                        inter.push(p);
-                    },
+                        points.push(p);
+                    }
                     None => continue,
                 }
             }
         }
 
-        if inter.len() > 0 {
-            let p1 = Circuit::origin();
-            let mut dist = std::u64::MAX;
-            let mut closest: Point = p1.clone();
+        points
+    }
 
-            for p in inter.iter() {
+    fn measure_speed(&self, end: &Point, wire: &Vec<Line>) -> u64 {
+        let mut w = 0u64;
+        for segment in wire.iter() {
+            match segment.contains(end) {
+                true => {
+                    let mut segment = segment.clone();
+                    segment.p2 = *end;
+                    w += segment.length();
+                    break;
+                },
+                false => w += segment.length()
+            };
+        }
 
-                if *p == p1 {
-                    continue;
-                }
+        w
+    }
 
-                let d = p1.mdist(&p);
+    pub fn closest_intersection(&self) -> Option<Point> {
+        let points = self.get_intersections();
 
-                if d < dist {
-                    dist = d;
-                    closest = p.clone();
-                }
+        if points.len() == 0 {
+            return None;
+        }
+        let p1 = Circuit::origin();
+        let mut dist = std::u64::MAX;
+        let mut closest: Point = p1.clone();
+
+        for p in points.iter() {
+            // Don't measure segment attached to the origin
+            if *p == p1 {
+                continue;
             }
 
+            let d = p1.mdist(&p);
 
-            // Not:
-            // 6
-
-            Some(closest)
-
-        } else {
-            None
+            if d < dist {
+                dist = d;
+                closest = p.clone();
+            }
         }
+
+        Some(closest)
+    }
+
+    pub fn fastest_intersection(&self) -> Option<(Point, u64)> {
+        let points = self.get_intersections();
+
+        // For each intersection, sum the segment lengths for each wire
+        // then sum each of these results to get the speed of this point.
+
+        if points.len() == 0 {
+            return None;
+        }
+
+        let p1 = Circuit::origin();
+        let mut speed = std::u64::MAX;
+        let mut fastest: Point = p1.clone();
+
+        for p in points.iter() {
+            let mut w = 0;
+
+            w += self.measure_speed(p, &self.wire_1);
+            w += self.measure_speed(p, &self.wire_2);            
+                        
+            if w < speed {
+                speed = w;
+                fastest = *p;
+            }
+        }
+
+        Some((fastest, speed))
     }
 }
 
@@ -137,7 +182,7 @@ mod tests {
         let wire_1 = "R8,U5,L5,D3".to_string();
         let wire_2 = "U7,R6,D4,L4".to_string();
 
-        let expected_point = Point {x: 4, y: 4};
+        let expected_point = Point { x: 4, y: 4 };
         let expected_dist: u64 = 6;
 
         let circuit = Circuit::from_segments(&wire_1, &wire_2);
@@ -176,5 +221,27 @@ mod tests {
         let d = p1.mdist(&closest_point);
 
         assert_eq!(135u64, d);
+    }
+
+    #[test]
+    fn circuit_1_speed() {
+        let wire_1 = "R75,D30,R83,U83,L12,D49,R71,U7,L72".to_string();
+        let wire_2 = "U62,R66,U55,R34,D71,R55,D58,R83".to_string();
+
+        let circuit = Circuit::from_segments(&wire_1, &wire_2);
+        let (_, dist) = circuit.fastest_intersection().unwrap();
+
+        assert_eq!(610u64, dist);
+    }
+
+    #[test]
+    fn circuit_2_speed() {
+        let wire_1 = "R98,U47,R26,D63,R33,U87,L62,D20,R33,U53,R51".to_string();
+        let wire_2 = "U98,R91,D20,R16,D67,R40,U7,R15,U6,R7".to_string();
+
+        let circuit = Circuit::from_segments(&wire_1, &wire_2);
+        let (_, dist) = circuit.fastest_intersection().unwrap();
+
+        assert_eq!(410u64, dist);
     }
 }
